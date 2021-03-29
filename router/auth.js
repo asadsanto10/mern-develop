@@ -8,7 +8,7 @@ const express = require('express');
 // express router
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
 require('../db/conn');
 const User = require('../modal/userSchema');
 
@@ -84,6 +84,7 @@ router.post('/register', async (req, res, next) => {
     } else {
       res.status(400).json({ error: 'Please all input filled properly' });
     }
+    next();
   } catch (err) {
     console.log(err);
     next(err);
@@ -99,7 +100,19 @@ router.post('/login', async (req, res, next) => {
       const userLogin = await User.findOne({ email });
       if (userLogin) {
         const matchPassword = await bcrypt.compare(password, userLogin.password);
+        // console.log(password);
+        // console.log(userLogin.password);
+        console.log(matchPassword);
         if (matchPassword) {
+          // json web token
+          const authToken = await userLogin.generateAuthToken();
+          console.log(authToken);
+
+          // set cookie authToken
+          // res.cookie('jwtoken', authToken, {
+          //   expires: new Date(Date.now() + 2589000000),
+          //   httpOnly: true,
+          // });
           res.status(200).json({ message: 'user login sucessfully', user: userLogin });
         } else {
           res.status(402).json({ error: 'Authentication failed password' });
