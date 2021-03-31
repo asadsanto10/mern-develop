@@ -12,7 +12,8 @@ require('./db/conn');
 app.use(express.json());
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
-// link yo touter file
+
+// link router file
 const auth = require('./router/auth');
 
 app.use(auth);
