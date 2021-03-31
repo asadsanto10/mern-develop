@@ -8,6 +8,7 @@
     "node": true
   },
   "rules": {
+    "consistent-return": 0,
     "no-console": 0,
     "no-underscore-dangle": "off",
     "prettier/prettier": [
