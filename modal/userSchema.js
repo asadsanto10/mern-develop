@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+// const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
@@ -35,18 +35,18 @@ const userSchema = new mongoose.Schema({
 
 // password hash
 // eslint-disable-next-line func-names
-userSchema.pre('save', async function (next) {
-  try {
-    const salt = await bcrypt.genSalt(12);
-    const hashPassword = await bcrypt.hash(this.password, salt);
-    const hashConfirmPassword = await bcrypt.hash(this.cPassword, salt);
-    this.password = hashPassword;
-    this.cPassword = hashConfirmPassword;
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
+// userSchema.pre('save', async function (next) {
+//   try {
+//     const salt = await bcrypt.genSalt(12);
+//     const hashPassword = await bcrypt.hash(this.password, salt);
+//     const hashConfirmPassword = await bcrypt.hash(this.cPassword, salt);
+//     this.password = hashPassword;
+//     this.cPassword = hashConfirmPassword;
+//     next();
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 // generate jwt token
 // eslint-disable-next-line func-names

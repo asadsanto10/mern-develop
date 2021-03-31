@@ -8,7 +8,8 @@ const express = require('express');
 // express router
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const Joi = require('@hapi/joi');
+
 require('../db/conn');
 const User = require('../modal/userSchema');
 
@@ -56,33 +57,50 @@ router.get('/', (req, res) => {
 //   // next();
 // });
 
+// validate Schema
+
+const schema = Joi.object({
+  name: Joi.string().min(6).required(),
+  email: Joi.string().min(6).required().email(),
+  phone: Joi.number().min(6).required(),
+  password: Joi.string().min(6).required(),
+  cPassword: Joi.ref('password'),
+});
+
 // ? async await function
 //  register auth
 router.post('/register', async (req, res, next) => {
   try {
     const { name, email, phone, password, cPassword } = req.body;
-    if (name && email && phone && password && cPassword) {
-      if (password === cPassword) {
-        // *** check emila to already exist
-        const userExists = await User.findOne({ email });
-        if (!userExists) {
-          const user = new User({
-            name,
-            email,
-            phone,
-            password,
-            cPassword,
-          });
-          await user.save();
-          res.status(201).json({ message: 'user register sucessfully' });
-        } else {
-          res.status(400).json({ error: 'email already exists ' });
-        }
-      } else {
-        res.status(401).json({ error: 'password do not match' });
-      }
-    } else {
+    if (!name && !email && !phone && !password && !cPassword) {
       res.status(400).json({ error: 'Please all input filled properly' });
+    }
+    // if (!password === cPassword) {
+    //   res.status(401).json({ error: 'password do not match' });
+    // }
+
+    // validate joi
+    const { error } = schema.validate(req.body);
+    if (error) {
+      res.send(error.details[0].message);
+    }
+
+    // *** check emila to already exist
+    const userExists = await User.findOne({ email });
+    if (!userExists) {
+      const salt = await bcrypt.genSalt(12);
+      const hashPassword = await bcrypt.hash(password, salt);
+      const user = new User({
+        name,
+        email,
+        phone,
+        password: hashPassword,
+        cPassword: hashPassword,
+      });
+      await user.save();
+      res.status(201).json({ message: 'user register sucessfully' });
+    } else {
+      res.status(400).json({ error: 'email already exists ' });
     }
     next();
   } catch (err) {
@@ -106,13 +124,13 @@ router.post('/login', async (req, res, next) => {
         if (matchPassword) {
           // json web token
           const authToken = await userLogin.generateAuthToken();
-          console.log(authToken);
+          // console.log(authToken);
 
           // set cookie authToken
-          // res.cookie('jwtoken', authToken, {
-          //   expires: new Date(Date.now() + 2589000000),
-          //   httpOnly: true,
-          // });
+          res.cookie('jwtoken', authToken, {
+            expires: new Date(Date.now() + 2589000000),
+            httpOnly: true,
+          });
           res.status(200).json({ message: 'user login sucessfully', user: userLogin });
         } else {
           res.status(402).json({ error: 'Authentication failed password' });
