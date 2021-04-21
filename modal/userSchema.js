@@ -19,18 +19,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  cPassword: {
-    type: String,
-    required: true,
-  },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true,
-      },
-    },
-  ],
+  // tokens: [
+  //   {
+  //     token: {
+  //       type: String,
+  //       required: true,
+  //     },
+  //   },
+  // ],
 });
 
 // password hash
@@ -53,9 +49,11 @@ const userSchema = new mongoose.Schema({
 userSchema.methods.generateAuthToken = async function () {
   try {
     // generate token
-    const generateToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
-    this.tokens = this.tokens.concat({ token: generateToken });
-    this.save();
+    const generateToken = jwt.sign({ _id: this._id }, process.env.SECRET_KEY, {
+      expiresIn: '1h',
+    });
+    // this.tokens = this.tokens.concat({ token: generateToken });
+    // this.save();
     return generateToken;
   } catch (err) {
     console.log(err);
